@@ -32,7 +32,7 @@ def main(page: ft.Page):
             page.update()
 
     def cadastrar_livro(novo_livro):
-        url = 'http://10.135.232.15:5000/novo_livro'
+        url = 'http://10.135.232.15:5001/novo_livro'
 
         response = requests.post(url, json=novo_livro)
         print(response)
@@ -56,6 +56,52 @@ def main(page: ft.Page):
         else:
             print(response.status_code)
 
+    def livros(e):
+        lv.controls.clear()
+        resultado_lista = lista_livros()
+
+        print(f' Livros: {resultado_lista}')
+        for livro in resultado_lista:
+            lv.controls.append(
+                ft.ListTile(
+                    leading=ft.Icon(ft.Icons.BOOK),
+                    title=ft.Text(f'Título: {livro["titulo"]}'),
+                    trailing=ft.PopupMenuButton(
+                        icon=ft.Icons.MORE_VERT,
+                        items=[
+                            ft.PopupMenuItem(text="DETALHES"),
+                            ft.PopupMenuItem(text="EDITAR", on_click=lambda _, l=livro: atualizar_livros(l)),
+                        ]
+                    )
+                )
+            )
+
+    def atualizar_livros(id):
+        url = 'http://10.135.232.20:5000/atualizar_livro/<int:id>'
+
+        atualizar_livro = {
+            'id': id,
+            'titulo': input_titulo.value,
+            'isbn': input_isbn.value,
+            'resumo': input_resumo.value,
+            'autor': input_autor.value,
+        }
+
+        antes = requests.get(url, json=atualizar_livro)
+        response = requests.put(url, json=atualizar_livro)
+
+        if response.status_code == 200:
+            if antes.status_code == 200:
+                dados_antes = antes.json()
+                print(f' Titulo antigo: {dados_antes["title"]}')
+            else:
+                print(f' Erro: {response.status_code}')
+            dados_put = response.json()
+            print(f' Titulo: {dados_put["title"]}')
+            print(f' Conteudo: {dados_put["body"]}\n')
+            page.go('/editar_livro')
+        else:
+            print(f' Erro: {response.status_code}')
 
 
     def salvar_usuario(e):
@@ -74,8 +120,87 @@ def main(page: ft.Page):
             cadastrar_usuario(novo_usuario)
             page.update()
 
+    def status(e):
+        lv.controls.clear()
+        resultado_status = listar_status()
+        print(f' Status: {resultado_status["livros_emprestados"]}')
+        for status in resultado_status['livros_emprestados']:
+            lv.controls.append(
+                ft.ListTile(
+                    leading=ft.Icon(ft.Icons.BOOK_OUTLINED),
+                    title=ft.Text(f'Título: {status["titulo"]}'),
+                    trailing=ft.PopupMenuButton(
+                        icon=ft.Icons.MORE_VERT,
+                        items=[
+                            ft.PopupMenuItem(text="DETALHES", on_click=lambda _, l=status: listar_status()),
+                        ]
+                    )
+                )
+            )
+
+        for status_disponiveis in resultado_status['livros_disponiveis']:
+            lv.controls.append(
+                ft.ListTile(
+                    leading=ft.Icon(ft.Icons.BOOK),
+                    title=ft.Text(f'Título: {status_disponiveis["titulo"]}'),
+                    trailing=ft.PopupMenuButton(
+                        icon=ft.Icons.MORE_VERT,
+                        items=[
+                            ft.PopupMenuItem(text="DETALHES", on_click=lambda _, l=status: listar_status()),
+                        ]
+                    )
+                )
+            )
+
+    def emprestimos(e):
+        lv.controls.clear()
+        resultado_emprestimo = lista_emprestimos()
+        print(f'Empréstimos: {resultado_emprestimo}')
+        for emprestimo in resultado_emprestimo:
+            lv.controls.append(
+                ft.ListTile(
+                    leading=ft.Icon(ft.Icons.BOOK),
+                    title=ft.Text(f'Empréstimos: {emprestimo}'),
+                    trailing=ft.PopupMenuButton(
+                        icon=ft.Icons.MORE_VERT,
+                        items=[
+                            ft.PopupMenuItem(text="DETALHES"),
+                            ft.PopupMenuItem(text="EDITAR", on_click=lambda _: atualizar_emprestimo(id)),
+                        ]
+                    )
+                )
+            )
+
+    def atualizar_emprestimo(id):
+        url = 'http://10.135.232.20:5000/editar_emprestimo/<id>'
+
+        atualizar_emprestimo = {
+            'id': id,
+            'livro_id': input_id_livro.value,
+            'usuario_id': input_id_usuario.value,
+            'data_emprestimo': input_data_emprestimo.value,
+            'data_devolucao': input_data_devolucao.value
+        }
+
+        antes = requests.get(url, json=atualizar_emprestimo)
+        response = requests.put(url, json=atualizar_emprestimo)
+
+        if response.status_code == 200:
+            if antes.status_code == 200:
+                dados_antes = antes.json()
+                print(f' Data de devolução antiga: {dados_antes["title"]}')
+            else:
+                print(f' Erro: {response.status_code}')
+            dados_put = response.json()
+            print(f' Titulo: {dados_put["title"]}')
+            print(f' Conteudo: {dados_put["body"]}\n')
+        else:
+            print(f' Erro: {response.status_code}')
+
+
+
     def cadastrar_usuario(novo_usuario):
-        url = 'http://10.135.232.15:5000/novo_usuario'
+        url = 'http://10.135.232.15:5001/novo_usuario'
         response = requests.post(url, json=novo_usuario)
 
         if response.status_code == 201:
@@ -92,6 +217,52 @@ def main(page: ft.Page):
             page.update()
         else:
             print(response.status_code)
+
+    def usuarios(e):
+        lv.controls.clear()
+        resultado_usuario = lista_usuarios()
+        print(f' Usuarios: {resultado_usuario}')
+        for usuario in resultado_usuario:
+            lv.controls.append(
+                ft.ListTile(
+                    leading=ft.Icon(ft.Icons.PERSON),
+                    title=ft.Text(f'Usuario: {usuario["nome"]}'),
+                    trailing=ft.PopupMenuButton(
+                        icon=ft.Icons.MORE_VERT,
+                        items=[
+                            ft.PopupMenuItem(text="DETALHES",),
+                            ft.PopupMenuItem(text="EDITAR", on_click=lambda _: atualizar_usuarios(id)),
+                        ]
+                    )
+                )
+            )
+
+
+    def atualizar_usuarios(id):
+        url = 'http://10.135.232.15:5000/atualizar_usuario/<id>'
+
+        atualizar_livros = {
+            'id': id,
+            'titulo': input_titulo.value,
+            'isbn': input_isbn.value,
+            'resumo': input_resumo.value,
+            'autor': input_autor.value,
+        }
+
+        antes = requests.get(url, json=atualizar_livros)
+        response = requests.put(url, json=atualizar_livros)
+
+        if response.status_code == 200:
+            if antes.status_code == 200:
+                dados_antes = antes.json()
+                print(f' Titulo antigo: {dados_antes["title"]}')
+            else:
+                print(f' Erro: {response.status_code}')
+            dados_put = response.json()
+            print(f' Titulo: {dados_put["title"]}')
+            print(f' Conteudo: {dados_put["body"]}\n')
+        else:
+            print(f' Erro: {response.status_code}')
 
 
 
@@ -111,7 +282,7 @@ def main(page: ft.Page):
             cadastrar_emprestimo(novo_emprestimo)
 
     def cadastrar_emprestimo(novo_emprestimo):
-        url = 'http://10.135.232.15:5000/realizar_emprestimo'
+        url = 'http://10.135.232.15:5001/realizar_emprestimo'
         response = requests.post(url, json=novo_emprestimo)
         print(response)
 
@@ -134,35 +305,37 @@ def main(page: ft.Page):
 
 
 
-    def listar_livros():
-        url = 'http://10.135.232.15:5000/livros'
+    def lista_livros():
+        url = 'http://10.135.232.15:5001/livros'
         response_livros = requests.get(url)
         if response_livros.status_code == 200:
             dados_livros = response_livros.json()
-            return dados_livros
+            print(f"{dados_livros}")
+            return dados_livros['livros']
         else:
             msg_error.open = True
-        page.update()
 
-    def listar_emprestimos():
-        url = 'http://10.135.232.15:5000/emprestimos'
+
+    def lista_emprestimos():
+        url = 'http://10.135.232.15:5001/emprestimos'
         response_emprestimos = requests.get(url)
         if response_emprestimos.status_code == 200:
             dados_emprestimos = response_emprestimos.json()
-            return dados_emprestimos
+            return dados_emprestimos['emprestimos']
         else:
             msg_error.open = True
-        page.update()
 
-    def listar_usuarios():
-        url = 'http://10.135.232.15:5000/usuarios'
+    def lista_usuarios():
+        url = 'http://10.135.232.15:5001/usuarios'
         response_usuarios = requests.get(url)
         if response_usuarios.status_code == 200:
             dados_usuarios = response_usuarios.json()
-            return dados_usuarios
+            print(f"kkkkkkkkk {dados_usuarios}")
+            return dados_usuarios["usuarios"]
+
         else:
             msg_error.open = True
-        page.update()
+
 
     def listar_status():
         url = 'http://10.135.232.15:5000/livro_status'
@@ -190,15 +363,15 @@ def main(page: ft.Page):
                                    bgcolor=ft.Colors.BLACK),
                     ElevatedButton(text="Listas",
                                    color=ft.Colors.WHITE,
-                                   on_click=lambda _: page.go(""),
+                                   on_click=lambda _: page.go("/listas"),
                                    bgcolor=ft.Colors.BLACK),
                     ElevatedButton(text="Status",
                                    color=ft.Colors.WHITE,
-                                   on_click=lambda _: page.go(""),
+                                   on_click=lambda _: page.go("/status"),
                                    bgcolor=ft.Colors.BLACK),
                     ElevatedButton(text="Atualizações",
                                    color=ft.Colors.WHITE,
-                                   on_click=lambda _: page.go(""),
+                                   on_click=lambda _: page.go("/atualizacao"),
                                    bgcolor=ft.Colors.BLACK
                                    ),
                 ),
@@ -285,18 +458,80 @@ def main(page: ft.Page):
                     horizontal_alignment=CrossAxisAlignment.CENTER,
                 )
             )
-        if page.route == "/livros":
+        if page.route == "/listas":
             page.views.append(
                 View(
-                    "/livros",
+                    "/listas",
                     [
                         AppBar(title=Text("Listas")),
                         ElevatedButton(text="Lista de Livros",
                                        color=ft.Colors.WHITE,
-                                       on_click=lambda _: page.go("/livros"),)
-                    ]
+                                       on_click=lambda _: page.go("/livros")),
+                        ElevatedButton(text="Lista de Usuários",
+                                       color=ft.Colors.WHITE,
+                                       on_click=lambda _: page.go("/usuarios")),
+                        ElevatedButton(text="Lista de Emprestimos",
+                                       color=ft.Colors.WHITE,
+                                       on_click=lambda _: page.go("/emprestimos")),
+                    ],
+                    bgcolor="",
+                    horizontal_alignment=CrossAxisAlignment.CENTER,
                 )
             )
+        if page.route == "/livros":
+            livros(e)
+            page.views.append(
+                View(
+                    "/livros",
+                    [
+                        AppBar(title=Text("Livros")),
+                        lv
+                    ],
+                    bgcolor="",
+                    horizontal_alignment=CrossAxisAlignment.CENTER,
+                )
+            )
+        if page.route == "/usuarios":
+            usuarios(e)
+            page.views.append(
+                View(
+                    "/usuarios",
+                    [
+                        AppBar(title=Text("Usuários")),
+                        lv
+                    ],
+                    horizontal_alignment=CrossAxisAlignment.CENTER,
+                )
+            )
+
+        if page.route == "/emprestimos":
+            emprestimos(e)
+            page.views.append(
+                View(
+                    "/emprestimos",
+                    [
+                        AppBar(title=Text("Emprestimos"), bgcolor=""),
+                        lv
+                    ],
+                    bgcolor="",
+                    horizontal_alignment=CrossAxisAlignment.CENTER,
+                )
+            )
+
+        if page.route == "/status":
+            status(e)
+            page.views.append(
+                View(
+                    "/status",
+                    [
+                        AppBar(title=Text("Status"), bgcolor="#2CC3FF"),
+                        lv
+                    ],
+                    bgcolor = "#213D85",
+                    horizontal_alignment = CrossAxisAlignment.CENTER,
+                )
+            )
+
         page.update()
 
 
@@ -347,6 +582,10 @@ def main(page: ft.Page):
     msg_error = ft.SnackBar(
         bgcolor=Colors.RED,
         content=ft.Text("Informações não correspondentes")
+    )
+
+    lv = ft.ListView(
+        height=500
     )
 
     page.on_route_change = gerencia_rota
