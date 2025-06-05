@@ -69,7 +69,8 @@ def main(page: ft.Page):
                     trailing=ft.PopupMenuButton(
                         icon=ft.Icons.MORE_VERT,
                         items=[
-                            ft.PopupMenuItem(text="DETALHES"),
+                            ft.PopupMenuItem(text="DETALHES",
+                                             on_click=lambda _, l=livro: detalhes_livro(l)),
                             ft.PopupMenuItem(text="EDITAR", on_click=lambda _, l=livro: atualizar_livros(l)),
                         ]
                     )
@@ -164,7 +165,8 @@ def main(page: ft.Page):
                     trailing=ft.PopupMenuButton(
                         icon=ft.Icons.MORE_VERT,
                         items=[
-                            ft.PopupMenuItem(text="DETALHES"),
+                            ft.PopupMenuItem(text="DETALHES",
+                                             on_click=lambda _, e=emprestimo: detalhes_emprestimo(e)),
                             ft.PopupMenuItem(text="EDITAR", on_click=lambda _: atualizar_emprestimo(id)),
                         ]
                     )
@@ -230,12 +232,19 @@ def main(page: ft.Page):
                     trailing=ft.PopupMenuButton(
                         icon=ft.Icons.MORE_VERT,
                         items=[
-                            ft.PopupMenuItem(text="DETALHES",),
+                            ft.PopupMenuItem(text="DETALHES",
+                                             on_click=lambda _, u=usuario: detalhes_usuario(u)),
                             ft.PopupMenuItem(text="EDITAR", on_click=lambda _: atualizar_usuarios(id)),
                         ]
                     )
                 )
             )
+    def detalhes_usuario(usuario):
+        txt_nome.value = usuario['nome']
+        txt_cpf.value = usuario['cpf']
+        txt_endereco.value = usuario['endereco']
+        page.update()
+        page.go('/detalhes_usuario')
 
 
     def atualizar_usuarios(id):
@@ -335,6 +344,20 @@ def main(page: ft.Page):
 
         else:
             msg_error.open = True
+
+    def detalhes_livro(livro):
+        txt_titulo.value = livro['titulo']
+        txt_autor.value = livro['autor']
+        txt_isbn.value = livro['isbn']
+        txt_resumo.value = livro['resumo']
+        page.update()
+        page.go("/detalhes_livro")
+
+    def detalhes_emprestimo(emprestimo):
+        txt_data_emprestimo.value = emprestimo['data_emprestimo']
+        txt_data_devolucao.value = emprestimo['data_devolucao']
+        page.update()
+        page.go("/detalhes_emprestimo")
 
 
     def listar_status():
@@ -491,6 +514,43 @@ def main(page: ft.Page):
                     horizontal_alignment=CrossAxisAlignment.CENTER,
                 )
             )
+
+        if page.route == "/detalhes_livro":
+            page.views.append(
+                View(
+                    "/detalhes_livro",
+                    [
+                        AppBar(title=Text("Detalhes Livro")),
+                        txt_titulo,
+                        txt_autor,
+                        txt_isbn,
+                        txt_resumo,
+                    ]
+                )
+            )
+        if page.route == "/detalhes_usuario":
+            page.views.append(
+                View(
+                    "/detalhes_usuario",
+                    [
+                        AppBar(title=Text("Detalhes Usuário")),
+                        txt_nome,
+                        txt_cpf,
+                        txt_endereco,
+                    ]
+                )
+            )
+        if page.route == "/detalhes_emprestimo":
+            page.views.append(
+                View(
+                    "/detalhes_emprestimo",
+                    [
+                        AppBar(title=Text("Detalhes Emprétimo")),
+                        txt_data_emprestimo,
+                        txt_data_devolucao,
+                    ]
+                )
+            )
         if page.route == "/usuarios":
             usuarios(e)
             page.views.append(
@@ -517,6 +577,7 @@ def main(page: ft.Page):
                     horizontal_alignment=CrossAxisAlignment.CENTER,
                 )
             )
+
 
         if page.route == "/status":
             status(e)
