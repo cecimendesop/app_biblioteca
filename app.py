@@ -1,10 +1,12 @@
-from http.client import responses
-
 import flet as ft
 import requests
 from flet import AppBar, Text, View, ElevatedButton
 from flet.core.colors import Colors
 from flet.core.types import CrossAxisAlignment
+
+id_usuario_global = 0
+id_livro_global = 0
+id_emprestimo_global = 0
 
 
 def main(page: ft.Page):
@@ -13,6 +15,7 @@ def main(page: ft.Page):
     page.theme_mode = ft.ThemeMode.LIGHT
     page.window.width = 375
     page.window.height = 667
+
 
     def salvar_livro(e):
         if (input_titulo.value == "" or input_isbn.value == ""
@@ -31,12 +34,12 @@ def main(page: ft.Page):
             cadastrar_livro(novo_livro)
             page.update()
 
+
     def cadastrar_livro(novo_livro):
         url = 'http://10.135.232.15:5001/novo_livro'
 
         response = requests.post(url, json=novo_livro)
         print(response)
-
 
         if response.status_code == 201:
             dados_livro = response.json()
@@ -56,6 +59,7 @@ def main(page: ft.Page):
         else:
             print(response.status_code)
 
+
     def livros(e):
         lv.controls.clear()
         resultado_lista = lista_livros()
@@ -71,38 +75,52 @@ def main(page: ft.Page):
                         items=[
                             ft.PopupMenuItem(text="DETALHES",
                                              on_click=lambda _, l=livro: detalhes_livro(l)),
-                            ft.PopupMenuItem(text="EDITAR", on_click=lambda _, l=livro: atualizar_livros(l)),
+                            ft.PopupMenuItem(text="EDITAR", on_click=lambda _, l=livro: popular_livros(l)),
                         ]
                     )
                 )
             )
 
-    def atualizar_livros(id):
+
+    def atualizar_livros(e):
+        global id_livro_global
         url = 'http://10.135.232.20:5000/atualizar_livro/<int:id>'
 
-        atualizar_livro = {
-            'id': id,
+        atualiza_livro = {
             'titulo': input_titulo.value,
             'isbn': input_isbn.value,
             'resumo': input_resumo.value,
             'autor': input_autor.value,
         }
-
-        antes = requests.get(url, json=atualizar_livro)
-        response = requests.put(url, json=atualizar_livro)
+        response = requests.put(url, json=atualiza_livro)
 
         if response.status_code == 200:
-            if antes.status_code == 200:
-                dados_antes = antes.json()
-                print(f' Titulo antigo: {dados_antes["title"]}')
-            else:
-                print(f' Erro: {response.status_code}')
-            dados_put = response.json()
-            print(f' Titulo: {dados_put["title"]}')
-            print(f' Conteudo: {dados_put["body"]}\n')
-            page.go('/editar_livro')
-        else:
             print(f' Erro: {response.status_code}')
+            page.go("/lista_livros")
+            page.update()
+        else:
+            return {
+                "Error": response.json()
+            }
+
+
+    def popular_livros(livro):
+        input_titulo.value = livro['titulo']
+        input_autor.value = livro['autor']
+        input_isbn.value = livro['isbn']
+        input_resumo.value = livro['resumo']
+        global id_livro_global
+        id_livro_global = livro['id_livro']
+        page.go("/atualizar_livro")
+
+
+    def popular_usuario(usuario):
+        input_nome.value = usuario['nome']
+        input_cpf.value = usuario['cpf']
+        input_endereco.value = usuario['endereco']
+        global id_usuario_global
+        id_usuario_global = usuario['id']
+        page.go("/atualizar_usuario")
 
 
     def salvar_usuario(e):
@@ -120,6 +138,7 @@ def main(page: ft.Page):
 
             cadastrar_usuario(novo_usuario)
             page.update()
+
 
     def status(e):
         lv.controls.clear()
@@ -153,6 +172,7 @@ def main(page: ft.Page):
                 )
             )
 
+
     def emprestimos(e):
         lv.controls.clear()
         resultado_emprestimo = lista_emprestimos()
@@ -172,6 +192,7 @@ def main(page: ft.Page):
                     )
                 )
             )
+
 
     def atualizar_emprestimo(id):
         url = 'http://10.135.232.20:5000/editar_emprestimo/<id>'
@@ -200,7 +221,6 @@ def main(page: ft.Page):
             print(f' Erro: {response.status_code}')
 
 
-
     def cadastrar_usuario(novo_usuario):
         url = 'http://10.135.232.15:5001/novo_usuario'
         response = requests.post(url, json=novo_usuario)
@@ -219,6 +239,7 @@ def main(page: ft.Page):
             page.update()
         else:
             print(response.status_code)
+
 
     def usuarios(e):
         lv.controls.clear()
@@ -239,6 +260,8 @@ def main(page: ft.Page):
                     )
                 )
             )
+
+
     def detalhes_usuario(usuario):
         txt_nome.value = usuario['nome']
         txt_cpf.value = usuario['cpf']
@@ -274,7 +297,6 @@ def main(page: ft.Page):
             print(f' Erro: {response.status_code}')
 
 
-
     def salvar_emprestimo(e):
         if (input_id_livro.value == "" or input_id_usuario == ""
                 or input_data_emprestimo.value == "" or input_data_devolucao.value == ""):
@@ -289,6 +311,7 @@ def main(page: ft.Page):
                 "data_devolucao": input_data_devolucao.value,
             }
             cadastrar_emprestimo(novo_emprestimo)
+
 
     def cadastrar_emprestimo(novo_emprestimo):
         url = 'http://10.135.232.15:5001/realizar_emprestimo'
@@ -313,7 +336,6 @@ def main(page: ft.Page):
             print(response)
 
 
-
     def lista_livros():
         url = 'http://10.135.232.15:5001/livros'
         response_livros = requests.get(url)
@@ -334,16 +356,18 @@ def main(page: ft.Page):
         else:
             msg_error.open = True
 
+
     def lista_usuarios():
         url = 'http://10.135.232.15:5001/usuarios'
         response_usuarios = requests.get(url)
         if response_usuarios.status_code == 200:
             dados_usuarios = response_usuarios.json()
-            print(f"kkkkkkkkk {dados_usuarios}")
+            print(f"{dados_usuarios}")
             return dados_usuarios["usuarios"]
 
         else:
             msg_error.open = True
+
 
     def detalhes_livro(livro):
         txt_titulo.value = livro['titulo']
@@ -352,6 +376,7 @@ def main(page: ft.Page):
         txt_resumo.value = livro['resumo']
         page.update()
         page.go("/detalhes_livro")
+
 
     def detalhes_emprestimo(emprestimo):
         txt_data_emprestimo.value = emprestimo['data_emprestimo']
@@ -369,6 +394,7 @@ def main(page: ft.Page):
         else:
             msg_error.open = True
         page.update()
+
 
     def gerencia_rota(e):
         page.views.clear()
@@ -392,16 +418,12 @@ def main(page: ft.Page):
                                    color=ft.Colors.WHITE,
                                    on_click=lambda _: page.go("/status"),
                                    bgcolor=ft.Colors.BLACK),
-                    ElevatedButton(text="Atualizações",
-                                   color=ft.Colors.WHITE,
-                                   on_click=lambda _: page.go("/atualizacao"),
-                                   bgcolor=ft.Colors.BLACK
-                                   ),
                 ),
                 bgcolor="",
                 horizontal_alignment=CrossAxisAlignment.CENTER,
             )
         )
+
         if page.route == "/cadastros":
             page.views.append(
                 View(
@@ -425,6 +447,7 @@ def main(page: ft.Page):
                     horizontal_alignment=CrossAxisAlignment.CENTER,
                 )
             )
+
         if page.route == "/novo_livro":
             page.views.append(
                 View(
@@ -442,6 +465,21 @@ def main(page: ft.Page):
                     ],
                     bgcolor="",
                     horizontal_alignment=CrossAxisAlignment.CENTER,
+                )
+            )
+
+        if page.route == "/atualizar_livro":
+            page.views.append(
+                View(
+                    "/atualizar_livro",
+                    [
+                        AppBar(title=Text("Atualizar Livro")),
+                        input_titulo,
+                        input_autor,
+                        input_isbn,
+                        input_resumo,
+                        ft.Button(text="Atualizar", on_click=lambda _: atualizar_livros(e))
+                    ]
                 )
             )
         if page.route == "/realizar_emprestimo":
@@ -578,7 +616,6 @@ def main(page: ft.Page):
                 )
             )
 
-
         if page.route == "/status":
             status(e)
             page.views.append(
@@ -588,16 +625,12 @@ def main(page: ft.Page):
                         AppBar(title=Text("Status"), bgcolor="#2CC3FF"),
                         lv
                     ],
-                    bgcolor = "#213D85",
-                    horizontal_alignment = CrossAxisAlignment.CENTER,
+                    bgcolor="#213D85",
+                    horizontal_alignment=CrossAxisAlignment.CENTER,
                 )
             )
 
         page.update()
-
-
-
-
 
 
     # componente
@@ -651,6 +684,5 @@ def main(page: ft.Page):
 
     page.on_route_change = gerencia_rota
     page.go(page.route)
-
 
 ft.app(main)
