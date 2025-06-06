@@ -84,7 +84,7 @@ def main(page: ft.Page):
 
     def atualizar_livros(e):
         global id_livro_global
-        url = 'http://10.135.232.20:5000/atualizar_livro/<int:id>'
+        url = f'http://10.135.232.15:5001/atualizar_livro/{id_livro_global}'
 
         atualiza_livro = {
             'titulo': input_titulo.value,
@@ -95,10 +95,11 @@ def main(page: ft.Page):
         response = requests.put(url, json=atualiza_livro)
 
         if response.status_code == 200:
-            print(f' Erro: {response.status_code}')
-            page.go("/lista_livros")
+
+            page.go("/livros")
             page.update()
         else:
+            print(f' Erro: {response.json()}')
             return {
                 "Error": response.json()
             }
@@ -112,6 +113,15 @@ def main(page: ft.Page):
         global id_livro_global
         id_livro_global = livro['id_livro']
         page.go("/atualizar_livro")
+
+    def popular_emprestimo(emprestimo):
+        input_id_livro.value = emprestimo['id_livro']
+        input_id_usuario.value = emprestimo['id_usuario']
+        input_data_emprestimo.value = emprestimo['data_emprestimo']
+        input_data_devolucao.value = emprestimo['data_devolucao']
+        global id_emprestimo_global
+        id_emprestimo_global = emprestimo['id_emprestimo']
+        page.go("/atualizar_emprestimo")
 
 
     def popular_usuario(usuario):
@@ -194,8 +204,9 @@ def main(page: ft.Page):
             )
 
 
-    def atualizar_emprestimo(id):
-        url = 'http://10.135.232.20:5000/editar_emprestimo/<id>'
+    def atualizar_emprestimo(e):
+        global id_emprestimo_global
+        url = f'http://10.135.232.15:5001/editar_emprestimo/{id_emprestimo_global}'
 
         atualizar_emprestimo = {
             'id': id,
@@ -204,21 +215,16 @@ def main(page: ft.Page):
             'data_emprestimo': input_data_emprestimo.value,
             'data_devolucao': input_data_devolucao.value
         }
-
-        antes = requests.get(url, json=atualizar_emprestimo)
         response = requests.put(url, json=atualizar_emprestimo)
 
         if response.status_code == 200:
-            if antes.status_code == 200:
-                dados_antes = antes.json()
-                print(f' Data de devolução antiga: {dados_antes["title"]}')
-            else:
-                print(f' Erro: {response.status_code}')
-            dados_put = response.json()
-            print(f' Titulo: {dados_put["title"]}')
-            print(f' Conteudo: {dados_put["body"]}\n')
+            page.go("/emprestimos")
+            page.update()
         else:
-            print(f' Erro: {response.status_code}')
+            print(f' Erro: {response.json()}')
+            return {
+                "Error": response.json()
+            }
 
 
     def cadastrar_usuario(novo_usuario):
@@ -255,7 +261,7 @@ def main(page: ft.Page):
                         items=[
                             ft.PopupMenuItem(text="DETALHES",
                                              on_click=lambda _, u=usuario: detalhes_usuario(u)),
-                            ft.PopupMenuItem(text="EDITAR", on_click=lambda _: atualizar_usuarios(id)),
+                            ft.PopupMenuItem(text="EDITAR", on_click=lambda _, u=usuarios: popular_usuario(u) ),
                         ]
                     )
                 )
@@ -270,31 +276,26 @@ def main(page: ft.Page):
         page.go('/detalhes_usuario')
 
 
-    def atualizar_usuarios(id):
-        url = 'http://10.135.232.15:5000/atualizar_usuario/<id>'
+    def atualizar_usuarios(e):
+        global id_usuario_global
+        url = f'http://10.135.232.15:5001/atualizar_usuario/{id_usuario_global}'
 
-        atualizar_livros = {
-            'id': id,
-            'titulo': input_titulo.value,
-            'isbn': input_isbn.value,
-            'resumo': input_resumo.value,
-            'autor': input_autor.value,
+        atualizar_usuarios= {
+            'nome': input_nome.value,
+            'CPF': input_cpf.value,
+            'endereco': input_endereco.value,
+
         }
-
-        antes = requests.get(url, json=atualizar_livros)
-        response = requests.put(url, json=atualizar_livros)
-
+        response = requests.put(url, json=atualizar_usuarios)
         if response.status_code == 200:
-            if antes.status_code == 200:
-                dados_antes = antes.json()
-                print(f' Titulo antigo: {dados_antes["title"]}')
-            else:
-                print(f' Erro: {response.status_code}')
-            dados_put = response.json()
-            print(f' Titulo: {dados_put["title"]}')
-            print(f' Conteudo: {dados_put["body"]}\n')
+
+            page.go("/usuarios")
+            page.update()
         else:
-            print(f' Erro: {response.status_code}')
+            print(f' Erro: {response.json()}')
+            return {
+                "Error": response.json()
+            }
 
 
     def salvar_emprestimo(e):
@@ -479,6 +480,33 @@ def main(page: ft.Page):
                         input_isbn,
                         input_resumo,
                         ft.Button(text="Atualizar", on_click=lambda _: atualizar_livros(e))
+                    ]
+                )
+            )
+        if page.route == "/atualizar_usuario":
+            page.views.append(
+                View(
+                    "/atualizar_usuario",
+                    [
+                        AppBar(title=Text("Atualizar Usuário")),
+                        input_nome,
+                        input_cpf,
+                        input_endereco,
+                        ft.Button(text="Atualizar", on_click=lambda _: atualizar_usuarios(e))
+                    ]
+                )
+            )
+        if page.route == "/atualizar_emprestimo":
+            page.views.append(
+                View(
+                    "/atualizar_emprestimo",
+                    [
+                        AppBar(title=Text("Atualizar Empréstimo")),
+                        input_id_livro,
+                        input_id_usuario,
+                        input_data_emprestimo,
+                        input_data_devolucao,
+                        ft.Button(text="Atualizar", on_click=lambda _: atualizar_emprestimo(e))
                     ]
                 )
             )
