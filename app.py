@@ -36,7 +36,7 @@ def main(page: ft.Page):
 
 
     def cadastrar_livro(novo_livro):
-        url = 'http://10.135.232.15:5001/novo_livro'
+        url = 'http://10.135.235.36:5001/novo_livro'
 
         response = requests.post(url, json=novo_livro)
         print(response)
@@ -84,7 +84,7 @@ def main(page: ft.Page):
 
     def atualizar_livros(e):
         global id_livro_global
-        url = f'http://10.135.232.15:5001/atualizar_livro/{id_livro_global}'
+        url = f'http://10.135.235.36:5001/atualizar_livro/{id_livro_global}'
 
         atualiza_livro = {
             'titulo': input_titulo.value,
@@ -125,6 +125,7 @@ def main(page: ft.Page):
 
 
     def popular_usuario(usuario):
+        print("AAAAAAAAA")
         input_nome.value = usuario['nome']
         input_cpf.value = usuario['cpf']
         input_endereco.value = usuario['endereco']
@@ -206,16 +207,16 @@ def main(page: ft.Page):
 
     def atualizar_emprestimo(e):
         global id_emprestimo_global
-        url = f'http://10.135.232.15:5001/editar_emprestimo/{id_emprestimo_global}'
+        url = f'http://10.135.235.36:5001/editar_emprestimo/{id_emprestimo_global}'
 
-        atualizar_emprestimo = {
+        atualiza_emprestimo = {
             'id': id,
             'livro_id': input_id_livro.value,
             'usuario_id': input_id_usuario.value,
             'data_emprestimo': input_data_emprestimo.value,
             'data_devolucao': input_data_devolucao.value
         }
-        response = requests.put(url, json=atualizar_emprestimo)
+        response = requests.put(url, json=atualiza_emprestimo)
 
         if response.status_code == 200:
             page.go("/emprestimos")
@@ -228,7 +229,7 @@ def main(page: ft.Page):
 
 
     def cadastrar_usuario(novo_usuario):
-        url = 'http://10.135.232.15:5001/novo_usuario'
+        url = 'http://10.135.235.36:5001/novo_usuario'
         response = requests.post(url, json=novo_usuario)
 
         if response.status_code == 201:
@@ -261,7 +262,7 @@ def main(page: ft.Page):
                         items=[
                             ft.PopupMenuItem(text="DETALHES",
                                              on_click=lambda _, u=usuario: detalhes_usuario(u)),
-                            ft.PopupMenuItem(text="EDITAR", on_click=lambda _, u=usuarios: popular_usuario(u) ),
+                            ft.PopupMenuItem(text="EDITAR", on_click=lambda _, u=usuario: popular_usuario(u) ),
                         ]
                     )
                 )
@@ -278,15 +279,15 @@ def main(page: ft.Page):
 
     def atualizar_usuarios(e):
         global id_usuario_global
-        url = f'http://10.135.232.15:5001/atualizar_usuario/{id_usuario_global}'
+        url = f'http://10.135.235.36:5001/atualizar_usuario/{id_usuario_global}'
 
-        atualizar_usuarios= {
+        atualiza_usuarios= {
             'nome': input_nome.value,
-            'CPF': input_cpf.value,
+            'cpf': input_cpf.value,
             'endereco': input_endereco.value,
 
         }
-        response = requests.put(url, json=atualizar_usuarios)
+        response = requests.put(url, json=atualiza_usuarios)
         if response.status_code == 200:
 
             page.go("/usuarios")
@@ -315,7 +316,7 @@ def main(page: ft.Page):
 
 
     def cadastrar_emprestimo(novo_emprestimo):
-        url = 'http://10.135.232.15:5001/realizar_emprestimo'
+        url = 'http://10.135.235.36:5001/realizar_emprestimo'
         response = requests.post(url, json=novo_emprestimo)
         print(response)
 
@@ -338,7 +339,7 @@ def main(page: ft.Page):
 
 
     def lista_livros():
-        url = 'http://10.135.232.15:5001/livros'
+        url = 'http://10.135.235.36:5001/livros'
         response_livros = requests.get(url)
         if response_livros.status_code == 200:
             dados_livros = response_livros.json()
@@ -349,7 +350,7 @@ def main(page: ft.Page):
 
 
     def lista_emprestimos():
-        url = 'http://10.135.232.15:5001/emprestimos'
+        url = 'http://10.135.235.36:5001/emprestimos'
         response_emprestimos = requests.get(url)
         if response_emprestimos.status_code == 200:
             dados_emprestimos = response_emprestimos.json()
@@ -359,7 +360,7 @@ def main(page: ft.Page):
 
 
     def lista_usuarios():
-        url = 'http://10.135.232.15:5001/usuarios'
+        url = 'http://10.135.235.36:5001/usuarios'
         response_usuarios = requests.get(url)
         if response_usuarios.status_code == 200:
             dados_usuarios = response_usuarios.json()
@@ -387,7 +388,7 @@ def main(page: ft.Page):
 
 
     def listar_status():
-        url = 'http://10.135.232.15:5000/livro_status'
+        url = 'http://10.135.235.36:5001/livro_status'
         response_status = requests.get(url)
         if response_status.status_code == 200:
             dados_status = response_status.json()
@@ -443,6 +444,7 @@ def main(page: ft.Page):
                                        color=ft.Colors.WHITE,
                                        on_click=lambda _: page.go("/realizar_emprestimo"),
                                        bgcolor=ft.Colors.BLACK),
+                        ElevatedButton(text="Voltar", on_click=lambda _: page.go("/"))
                     ],
                     bgcolor="",
                     horizontal_alignment=CrossAxisAlignment.CENTER,
@@ -462,7 +464,8 @@ def main(page: ft.Page):
                         ElevatedButton(text="Enviar",
                                        color=ft.Colors.WHITE,
                                        on_click=lambda _: salvar_livro(e),
-                                       bgcolor=ft.Colors.BLACK)
+                                       bgcolor=ft.Colors.BLACK),
+                        ElevatedButton(text="Voltar", on_click=lambda _: page.go("/cadastros"))
                     ],
                     bgcolor="",
                     horizontal_alignment=CrossAxisAlignment.CENTER,
@@ -479,7 +482,8 @@ def main(page: ft.Page):
                         input_autor,
                         input_isbn,
                         input_resumo,
-                        ft.Button(text="Atualizar", on_click=lambda _: atualizar_livros(e))
+                        ft.Button(text="Atualizar", on_click=lambda _: atualizar_livros(e)),
+                        ElevatedButton(text="Voltar", on_click=lambda _: page.go("/livros"))
                     ]
                 )
             )
@@ -492,7 +496,8 @@ def main(page: ft.Page):
                         input_nome,
                         input_cpf,
                         input_endereco,
-                        ft.Button(text="Atualizar", on_click=lambda _: atualizar_usuarios(e))
+                        ft.Button(text="Atualizar", on_click=lambda _: atualizar_usuarios(e)),
+                        ElevatedButton(text="Voltar", on_click=lambda _: page.go("/usuarios"))
                     ]
                 )
             )
@@ -506,7 +511,8 @@ def main(page: ft.Page):
                         input_id_usuario,
                         input_data_emprestimo,
                         input_data_devolucao,
-                        ft.Button(text="Atualizar", on_click=lambda _: atualizar_emprestimo(e))
+                        ft.Button(text="Atualizar", on_click=lambda _: atualizar_emprestimo(e)),
+                        ElevatedButton(text="Voltar", on_click=lambda _: page.go("/realizar_emprestimo")),
                     ]
                 )
             )
@@ -523,7 +529,8 @@ def main(page: ft.Page):
                         ElevatedButton(text="Enviar",
                                        color=ft.Colors.WHITE,
                                        on_click=lambda _: salvar_emprestimo(e),
-                                       bgcolor=ft.Colors.BLACK)
+                                       bgcolor=ft.Colors.BLACK),
+                        ElevatedButton(text="Voltar", on_click=lambda _: page.go("/cadastros"))
                     ],
                     bgcolor="",
                     horizontal_alignment=CrossAxisAlignment.CENTER,
@@ -541,7 +548,8 @@ def main(page: ft.Page):
                         ElevatedButton(text="Enviar",
                                        color=ft.Colors.WHITE,
                                        on_click=lambda _: salvar_usuario(e),
-                                       bgcolor=ft.Colors.BLACK)
+                                       bgcolor=ft.Colors.BLACK),
+                        ElevatedButton(text="Voltar", on_click=lambda _: page.go("/cadastros"))
                     ],
                     bgcolor="",
                     horizontal_alignment=CrossAxisAlignment.CENTER,
@@ -554,14 +562,15 @@ def main(page: ft.Page):
                     [
                         AppBar(title=Text("Listas")),
                         ElevatedButton(text="Lista de Livros",
-                                       color=ft.Colors.WHITE,
+                                       color=ft.Colors.BLACK,
                                        on_click=lambda _: page.go("/livros")),
                         ElevatedButton(text="Lista de Usuários",
-                                       color=ft.Colors.WHITE,
+                                       color=ft.Colors.BLACK,
                                        on_click=lambda _: page.go("/usuarios")),
                         ElevatedButton(text="Lista de Emprestimos",
-                                       color=ft.Colors.WHITE,
+                                       color=ft.Colors.BLACK,
                                        on_click=lambda _: page.go("/emprestimos")),
+                        ElevatedButton(text="Voltar", on_click=lambda _: page.go("/"))
                     ],
                     bgcolor="",
                     horizontal_alignment=CrossAxisAlignment.CENTER,
@@ -574,7 +583,8 @@ def main(page: ft.Page):
                     "/livros",
                     [
                         AppBar(title=Text("Livros")),
-                        lv
+                        lv,
+                        ElevatedButton(text="Voltar", on_click=lambda _: page.go("/listas"))
                     ],
                     bgcolor="",
                     horizontal_alignment=CrossAxisAlignment.CENTER,
@@ -591,6 +601,7 @@ def main(page: ft.Page):
                         txt_autor,
                         txt_isbn,
                         txt_resumo,
+                        ElevatedButton(text="Voltar", on_click=lambda _: page.go("/livros"))
                     ]
                 )
             )
@@ -603,6 +614,7 @@ def main(page: ft.Page):
                         txt_nome,
                         txt_cpf,
                         txt_endereco,
+                        ElevatedButton(text="Voltar", on_click=lambda _: page.go("/usuarios")),
                     ]
                 )
             )
@@ -614,6 +626,7 @@ def main(page: ft.Page):
                         AppBar(title=Text("Detalhes Emprétimo")),
                         txt_data_emprestimo,
                         txt_data_devolucao,
+                        ElevatedButton(text="Voltar", on_click=lambda _: page.go("/emprestimos")),
                     ]
                 )
             )
@@ -624,7 +637,8 @@ def main(page: ft.Page):
                     "/usuarios",
                     [
                         AppBar(title=Text("Usuários")),
-                        lv
+                        lv,
+                        ElevatedButton(text="Voltar", on_click=lambda _: page.go("/listas"))
                     ],
                     horizontal_alignment=CrossAxisAlignment.CENTER,
                 )
@@ -637,7 +651,8 @@ def main(page: ft.Page):
                     "/emprestimos",
                     [
                         AppBar(title=Text("Emprestimos"), bgcolor=""),
-                        lv
+                        lv,
+                        ElevatedButton(text="Voltar", on_click=lambda _: page.go("/listas"))
                     ],
                     bgcolor="",
                     horizontal_alignment=CrossAxisAlignment.CENTER,
@@ -651,7 +666,8 @@ def main(page: ft.Page):
                     "/status",
                     [
                         AppBar(title=Text("Status"), bgcolor="#2CC3FF"),
-                        lv
+                        lv,
+                        ElevatedButton(text="Voltar", on_click=lambda _: page.go("/"))
                     ],
                     bgcolor="#213D85",
                     horizontal_alignment=CrossAxisAlignment.CENTER,
